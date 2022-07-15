@@ -1,0 +1,5 @@
+requests==2.28.0
+bs4==0.0.1
+beautifulsoup4==4.11.1
+pyodbc==4.0.32
+html2image==2.0.1
