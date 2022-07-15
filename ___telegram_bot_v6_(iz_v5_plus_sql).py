@@ -1,17 +1,16 @@
 # based on https://www.codementor.io/@garethdwyer/building-a-telegram-bot-using-python-part-1-goi5fncay
 
 
-TOKEN = ""
-full_filename_of_an_aux_html_file = r''
-mssql_driver_name = r''
-mssql_server_name = r''
-mssql_database_name = r''
-mssql_user = r''
-mssql_pwd = r''
+TOKEN = ""                                      # for Telegram bot
+full_filename_of_an_aux_html_file = r''         # any convenient full pathname for the html file being generated
+mssql_driver_name = r''                         # for MS SQL
+mssql_server_name = r''                         # for MS SQL
+mssql_database_name = r''                       # for MS SQL
+mssql_user = r''                                # for MS SQL: user (admin) name
+mssql_pwd = r''                                 # for MS SQL: user password
 
-
-dir_path = r''
-filename_of_an_aux_png_file_itself = 'response.png'
+dir_path = r''                                  # any convenient path to dir where the image of the article beginning will be save
+filename_of_an_aux_png_file_itself = 'response.png'    # any convenient name for image file
 full_filename_of_an_aux_png_file = dir_path + "\\" + filename_of_an_aux_png_file_itself
 
 write_to_database_flag = "on"  # "on" (save requests history to database) OR "off" (do not)
