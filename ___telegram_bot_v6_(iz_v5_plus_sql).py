@@ -1,23 +1,16 @@
 # based on https://www.codementor.io/@garethdwyer/building-a-telegram-bot-using-python-part-1-goi5fncay
 
 
-TOKEN = ""                                      # for Telegram bot
-full_filename_of_an_aux_html_file = r''         # any convenient full pathname for the html file being generated
-mssql_driver_name = r''                         # for MS SQL
-mssql_server_name = r''                         # for MS SQL
-mssql_database_name = r''                       # for MS SQL
-mssql_user = r''                                # for MS SQL: user (admin) name
-mssql_pwd = r''                                 # for MS SQL: user password
+# non-secret variables:
 
-dir_path = r''                                  # any convenient path to dir where the image of the article beginning will be save
-filename_of_an_aux_png_file_itself = 'response.png'    # any convenient name for image file
-full_filename_of_an_aux_png_file = dir_path + "\\" + filename_of_an_aux_png_file_itself
+filename_of_png_file_itself = r'response.png'     #begins with r
+filename_of_html_file_itself = r'response.html'     #begins with r
 
-write_to_database_flag = "on"  # "on" (save requests history to database) OR "off" (do not)
-if (write_to_database_flag != "off"): write_to_database_flag = "on"  # on is preferred
+#=====================
 
 from primary_parsing_of_vocab_site import printout_primary_parse_result
 
+import os
 import json             # (to parse the JSON responses from Telegram into Python dictionaries so that we can extract the pieces of data that we need)
 import requests
 import time
@@ -27,17 +20,45 @@ import pyodbc
 
 
 
+
+TOKEN: str = os.getenv('MY_WOO_MSSQL_TOKEN')
+             # like xxxxxxxxxx:xxxxxxxxxxxxxxxxxxx-xxxxxxxxxxxxxxx
+mssql_driver_name: str = os.getenv('MY_WOO_MSSQL_DRIVER_NAME')
+             # like ODBC Driver 17 for SQL Server
+mssql_server_name: str = os.getenv('MY_WOO_MSSQL_SERVER_NAME')
+             # like SYSTEMNAME\SQLEXPRESS
+mssql_database_name: str = os.getenv('MY_WOO_MSSQL_DB_NAME')
+             # like name_of_database
+mssql_user: str = os.getenv('MY_WOO_MSSQL_USER_NAME')
+             # like db_username
+mssql_pwd: str = os.getenv('MY_WOO_MSSQL_USER_PWD')
+             # like db_user_pass
+dir_path: str = os.getenv('MY_WOO_DIRNAME')
+             # like dir_path = r'C:\TEMP
+
+
+full_filename_of_an_aux_png_file = dir_path + "\\" + filename_of_png_file_itself
+full_filename_of_an_aux_html_file = dir_path + "\\" + filename_of_html_file_itself
+
+
+write_to_database_flag = "on"  # "on" (save requests history to database) OR "off" (do not)
+if (write_to_database_flag != "off"): write_to_database_flag = "on"  # on is preferred
+
+
 URL_beginning = "https://api.telegram.org/bot{}/".format(TOKEN)        #  basic URL
+
 
 def get_content_of_user_message(url):
     response = requests.get(url)
     user_mes_content = response.content.decode("utf8")      # for extra compatibility
     return user_mes_content
 
+
 def transform_json_to_py_dict(url):
     content = get_content_of_user_message(url)        # in Telegram this is always in JSON
     user_mes_content_as_py_dict = json.loads(content)    # transform a JSON string to a python dictionary
     return user_mes_content_as_py_dict
+
 
 def get_updates(offset=None):
     url = URL_beginning + "getUpdates?timeout=10"
@@ -46,11 +67,13 @@ def get_updates(offset=None):
     user_mes_content_as_py_dict = transform_json_to_py_dict(url)
     return user_mes_content_as_py_dict
 
+
 def get_last_update_id(updates):
     update_ids = []
     for update in updates["result"]:
         update_ids.append(int(update["update_id"]))
     return max(update_ids)
+
 
 # if there was a connectivity issue and a user managed to send many messages - we will reply to each
 def respond_to_all_new_user_messages(all_updates, request_term_column_allowed_size):
@@ -83,6 +106,7 @@ def respond_to_all_new_user_messages(all_updates, request_term_column_allowed_si
         except Exception as e:
             print(e)
 
+
 def respond_to_one_user_message(input_text, chat_id):
     nice_input_text = urllib.parse.quote(input_text)      # что лучше - .quote или .quote_plus ? вообще это чтобы любые знаки ок были
     search_string = nice_input_text
@@ -95,7 +119,7 @@ def respond_to_one_user_message(input_text, chat_id):
     hti = Html2Image(output_path=dir_path)           # тут путь к директории, куда сохраняем скриншот
     hti.screenshot(
         html_file=full_filename_of_an_aux_html_file,
-        save_as=filename_of_an_aux_png_file_itself,      # а это имя файла со скриншотом без пути
+        save_as=filename_of_png_file_itself,      # а это имя файла со скриншотом без пути
         size=(500, 1000))                     # нет смысла делать высоту больше 1000 (Телеграм сожмет)
 
     # url = URL_beginning + "sendMessage?text={}&chat_id={}".format(output_text, chat_id)
